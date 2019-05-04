@@ -41,13 +41,16 @@ public class AnimationPlayer {
     public BufferedImage nextFrame() {
 
         long currentTime = System.currentTimeMillis();
-        if ((1000.0 / getFramesPerSecond()) <= (currentTime - lastFrameChange)) {
+        if ((1000.0 / getFramesPerSecond()) <= (currentTime - lastFrameChange) && playing) {
             currentFrame++;
             lastFrameChange = currentTime;
+            System.out.println("switching frames in the " + currentAnim.getTitle() + " anim");
         }
 
+        System.out.println("last frame change was " + (currentTime - lastFrameChange) + " ms ago");
+
         if (currentAnim == null || currentFrame >= (currentAnim.getFrameCount()) || !playing) {
-            if (animQueue.isEmpty()) {
+            if (isAnimQueueEmpty()) {
                 playing = false;
             } else {
                 resetFieldsForNextAnim();
@@ -56,7 +59,7 @@ public class AnimationPlayer {
         }
         if (!playing) {
             if (!(idleAnim == null)) {
-                playAnim(idleAnim);
+                queueAnim(idleAnim);
                 resetFieldsForNextAnim();
             }
             return null;
@@ -67,40 +70,67 @@ public class AnimationPlayer {
 
 
     //Optionally clears the current queue and overwrites the current playing animation to play the requested anim.
-
-    public void forceAnim(Animation anim, boolean clear) {
+    public void playAnim(Animation anim, boolean clear) {
         if (clear) clearAnimQueue();
         resetFieldsForNextAnim();
 
         currentAnim = new Animation(anim);
     }
 
-    public void forceAnim(String title, boolean clear) {
-        forceAnim(animations.get(title), clear);
+    public void playAnim(String title, boolean clear) {
+        playAnim(animations.get(title), clear);
     }
 
-    public void forceAnim(String title) {
-        forceAnim(animations.get(title), true);
+    public void playAnim(String title) {
+        playAnim(animations.get(title), true);
     }
 
-    public void forceAnim(Animation anim) {
-        forceAnim(anim, true);
+    public void playAnim(Animation anim) {
+        playAnim(anim, true);
     }
 
 
     //Queues up an anim to play after currently queued anims are played.
-    public void playAnim(Animation anim) {
+    public void queueAnim(Animation anim) {
         animQueue.add(anim);
     }
 
-    public void playAnim(String title) {
-        playAnim(animations.get(title));
+    public void queueAnim(String title) {
+        queueAnim(animations.get(title));
     }
 
+    //Returns if the queue is empty or not.
+    public boolean isAnimQueueEmpty() {
+        return animQueue.isEmpty();
+    }
 
-    //Clears the current queue of anims
+    //Clears the current queue of anims.
+    //Optionally stops playing the current anim.
     public void clearAnimQueue() {
+        clearAnimQueue(false);
+    }
+
+    public void clearAnimQueue(boolean stopPlaying) {
         animQueue.clear();
+        if (stopPlaying) {
+            playing = false;
+            currentAnim = null;
+        }
+    }
+
+    //Stops the anim from playing and clears the queue.
+    //Removes the idle anim.
+    public void stop() {
+        clearAnimQueue();
+        playing = false;
+        currentAnim = null;
+        removeIdleAnim();
+    }
+
+    //Resets the existing anim list and stops the player.
+    public void reset() {
+        stop();
+        animations.clear();
     }
 
     //Helper methods that sets the fields specific per anim.
@@ -166,6 +196,11 @@ public class AnimationPlayer {
 
     public void removeIdleAnim() {
         idleAnim = null;
+    }
+
+    //Returns the specified anim
+    public Animation getAnim(String title) {
+        return animations.get(title);
     }
 
 }

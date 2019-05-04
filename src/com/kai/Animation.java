@@ -21,7 +21,7 @@ public class Animation {
     }
 
     public Animation(BufferedImage[] frames) {
-        this("Untitled", frames);
+        this("untitled", frames);
     }
 
     public Animation(String title, List<BufferedImage> frames) {
@@ -29,7 +29,7 @@ public class Animation {
     }
 
     public Animation(List<BufferedImage> frames) {
-        this("Untitled", (BufferedImage[]) frames.toArray());
+        this("untitled", (BufferedImage[]) frames.toArray());
     }
 
     public Animation(Animation anim) {
