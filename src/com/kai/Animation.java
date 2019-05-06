@@ -1,7 +1,9 @@
 package com.kai;
 
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created: 05/03/2019
@@ -57,4 +59,27 @@ public class Animation {
         return frames.length;
     }
 
+    @Override
+    public String toString() {
+        return "Animation{" +
+                "title='" + title + '\'' +
+                ", frames=" + Arrays.toString(frames) +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Animation animation = (Animation) o;
+        return Objects.equals(title, animation.title) &&
+                Arrays.equals(frames, animation.frames);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(title);
+        result = 31 * result + Arrays.hashCode(frames);
+        return result;
+    }
 }

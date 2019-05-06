@@ -34,8 +34,8 @@ public class AnimationPlayer {
     //The current queue of anims to be played.
     private Queue<Animation> animQueue = new LinkedList<>();
 
-    //An optional idle anim that is returned when no animations are being played.
-    private Animation idleAnim;
+    //An optional repeating anim that is returned when no animations are being played.
+    private Animation repeatingAnim;
 
     //Returns the next frame in the anim current being played.
     public BufferedImage nextFrame() {
@@ -44,10 +44,9 @@ public class AnimationPlayer {
         if ((1000.0 / getFramesPerSecond()) <= (currentTime - lastFrameChange) && playing) {
             currentFrame++;
             lastFrameChange = currentTime;
-            System.out.println("switching frames in the " + currentAnim.getTitle() + " anim");
+            //System.out.println("switching frames in the " + currentAnim.getTitle() + " anim");
         }
-
-        System.out.println("last frame change was " + (currentTime - lastFrameChange) + " ms ago");
+        //System.out.println("last frame change was " + (currentTime - lastFrameChange) + " ms ago");
 
         if (currentAnim == null || currentFrame >= (currentAnim.getFrameCount()) || !playing) {
             if (isAnimQueueEmpty()) {
@@ -58,11 +57,13 @@ public class AnimationPlayer {
             }
         }
         if (!playing) {
-            if (!(idleAnim == null)) {
-                queueAnim(idleAnim);
+            if (!(repeatingAnim == null)) {
+                queueAnim(repeatingAnim);
+                currentAnim = animQueue.poll();
                 resetFieldsForNextAnim();
+            } else {
+                return null;
             }
-            return null;
         }
 
         return currentAnim.getFrame(currentFrame);
@@ -119,12 +120,12 @@ public class AnimationPlayer {
     }
 
     //Stops the anim from playing and clears the queue.
-    //Removes the idle anim.
+    //Removes the repeating anim.
     public void stop() {
         clearAnimQueue();
         playing = false;
         currentAnim = null;
-        removeIdleAnim();
+        removeRepeatingAnim();
     }
 
     //Resets the existing anim list and stops the player.
@@ -136,7 +137,6 @@ public class AnimationPlayer {
     //Helper methods that sets the fields specific per anim.
     public void resetFieldsForNextAnim() {
         currentFrame = 0;
-        lastFrameChange = System.currentTimeMillis();
         playing = true;
     }
 
@@ -177,25 +177,23 @@ public class AnimationPlayer {
     }
 
 
-    //Sets the idle animation.
-    public void setIdleAnim(Animation anim) {
-        idleAnim = new Animation(anim);
+    //Sets the repeating animation.
+    //Overrides the current repeating anim. but not a queued or played anim.
+    public void setRepeatingAnim(Animation anim) {
+        Animation newRepeatingAnim = new Animation(anim);
+        if (currentAnim == repeatingAnim) {
+            currentAnim = newRepeatingAnim;
+        }
+
+        repeatingAnim = newRepeatingAnim;
     }
 
-    public void setIdleAnim(String title, BufferedImage[] frames) {
-        setIdleAnim(new Animation(title, frames));
+    public void setRepeatingAnim(String title) {
+        setRepeatingAnim(animations.get(title));
     }
 
-    public void setIdleAnim(String title, List<BufferedImage> frames) {
-        setIdleAnim(new Animation(title, frames));
-    }
-
-    public void setIdleAnim(String title) {
-        setIdleAnim(animations.get(title));
-    }
-
-    public void removeIdleAnim() {
-        idleAnim = null;
+    public void removeRepeatingAnim() {
+        repeatingAnim = null;
     }
 
     //Returns the specified anim
